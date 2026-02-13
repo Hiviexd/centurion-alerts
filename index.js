@@ -1,8 +1,8 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import config from "./config.json" with { type: "json" };
-import { loadCache, saveCache } from "./lib/cache.js";
-import { sendCenturionEmbed } from "./lib/discord.js";
+import { cacheExists, loadCache, saveCache } from "./lib/cache.js";
+import { sendCenturionEmbed, sendFinishedProcessingEmbed, sendInitialCacheEmbed } from "./lib/discord.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const API_URL = config.osekaiApiUrl;
@@ -25,15 +25,31 @@ async function fetchRankings() {
     return Array.isArray(data) ? data : [];
 }
 
-const cache = loadCache(CACHE_FILE);
-
-const list = await fetchRankings().catch((err) => {
+const top100 = (await fetchRankings().catch((err) => {
     console.error("Fetch failed:", err);
     process.exit(1);
-});
+})).slice(0, 100);
 
-const top100 = list.slice(0, 100);
-let count = 0;
+if (!cacheExists(CACHE_FILE)) {
+    console.log(
+        "No cache found. Created initial cache from current rankings. Future runs will check for new centurions.",
+    );
+    const cache = new Map();
+    for (const row of top100) {
+        cache.set(String(row.userid), {
+            ranked: parseInt(row.ranked, 10),
+            username: row.username,
+        });
+    }
+    saveCache(CACHE_FILE, cache);
+    if (WEBHOOK_URL) {
+        await sendInitialCacheEmbed(WEBHOOK_URL, DISCORD_USER_ID);
+    }
+    process.exit(0);
+}
+
+const cache = loadCache(CACHE_FILE);
+let centurionCount = 0;
 
 for (const row of top100) {
     const userid = String(row.userid);
@@ -43,22 +59,25 @@ for (const row of top100) {
 
     if (ranked >= 100 && (prevRanked === null || prevRanked < 100)) {
         console.log(`${row.username} (id: ${userid}) reached 100 ranked mapsets`);
-        count++;
-        if (WEBHOOK_URL) {
-            try {
-                await sendCenturionEmbed(
-                    WEBHOOK_URL,
-                    { username: row.username, userid, countrycode: row.countrycode },
-                    DISCORD_USER_ID,
-                );
-            } catch (err) {
-                console.error("Discord webhook error:", err);
-            }
-        }
+        centurionCount++;
+
+        await sendCenturionEmbed(
+            WEBHOOK_URL,
+            { username: row.username, userid, countrycode: row.countrycode },
+            DISCORD_USER_ID,
+        ).catch((err) => {
+            console.error("Discord webhook error:", err);
+        });
     }
 }
 
-console.log(`Found ${count} users who reached 100 ranked mapsets`);
+console.log(`Found ${centurionCount} users who reached 100 ranked mapsets`);
+
+if (centurionCount === 0) {
+    await sendFinishedProcessingEmbed(WEBHOOK_URL, centurionCount).catch((err) => {
+        console.error("Discord webhook error:", err);
+    });
+}
 
 cache.clear();
 for (const row of top100) {
