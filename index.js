@@ -61,13 +61,15 @@ for (const row of userList) {
     const prev = cache.get(userid);
     const prevRanked = prev !== undefined ? prev.ranked : null;
 
-    if (ranked >= 100 && (prevRanked === null || prevRanked < 100)) {
-        console.log(`${row.username} (id: ${userid}) reached 100 ranked mapsets`);
+    const milestone = Math.floor(ranked / 100) * 100;
+    if (milestone >= 100 && (prevRanked === null || prevRanked < milestone)) {
+        console.log(`${row.username} (id: ${userid}) reached ${milestone} ranked mapsets`);
         centurionCount++;
 
         await sendCenturionEmbed(
             WEBHOOK_URL,
             { username: row.username, userid, countrycode: row.countrycode },
+            milestone,
             DISCORD_USER_ID,
         ).catch((err) => {
             console.error("Discord webhook error:", err);
@@ -75,7 +77,7 @@ for (const row of userList) {
     }
 }
 
-console.log(`Found ${centurionCount} users who reached 100 ranked mapsets`);
+console.log(`Found ${centurionCount} user(s) who reached a new 100-map milestone`);
 
 if (centurionCount === 0) {
     await sendFinishedProcessingEmbed(WEBHOOK_URL, centurionCount).catch((err) => {
