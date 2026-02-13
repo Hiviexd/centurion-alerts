@@ -80,7 +80,7 @@ for (const row of userList) {
 console.log(`Found ${centurionCount} user(s) who reached a new 100-map milestone`);
 
 if (centurionCount === 0) {
-    await sendFinishedProcessingEmbed(WEBHOOK_URL, centurionCount).catch((err) => {
+    await sendFinishedProcessingEmbed(WEBHOOK_URL).catch((err) => {
         console.error("Discord webhook error:", err);
     });
 }
