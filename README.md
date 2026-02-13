@@ -10,7 +10,7 @@ pings you on discord when someone in the [osekai ranked mapsets leaderboard](htt
    - `discord.webhookUrl`: your discord webhook url
    - `discord.userId`: your discord user id if you want to be pinged on alerts
 
-2. run using `pnpm start` or `node index.js`, no dependencies needed (apart from node.js but you already knew that)
+2. run using `node index.js` or the `start` script through your package manager of choice, no dependencies needed (apart from node.js but you already knew that)
 
 > [!NOTE]
 > the first run won’t send centurion alerts — it just builds the cache so the next run has something to compare against.
