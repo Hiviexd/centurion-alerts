@@ -6,6 +6,7 @@ pings you on discord when someone in the [osekai ranked mapsets leaderboard](htt
 
 1. copy `config.example.json` to `config.json` and fill in:
    - `userCountThreshold`: the number of users to check for new centurions (default: `100`)
+   - `emptyRunNotification`: whether to send a notification when no centurions are found (default: `true`)
    - `osekaiApiUrl`: the osekai rankings api endpoint
    - `discord.webhookUrl`: your discord webhook url
    - `discord.userId`: your discord user id if you want to be pinged on alerts

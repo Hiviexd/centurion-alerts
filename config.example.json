@@ -1,6 +1,7 @@
 {
     "osekaiApiUrl": "",
     "userCountThreshold": 100,
+    "emptyRunNotification": true,
     "discord": {
         "webhookUrl": "",
         "userId": ""

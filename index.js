@@ -10,7 +10,8 @@ const API_URL = config.osekaiApiUrl;
 const CACHE_FILE = path.join(dirname, "cache.json");
 const WEBHOOK_URL = config.discord?.webhookUrl;
 const DISCORD_USER_ID = config.discord?.userId;
-const USER_COUNT_THRESHOLD = config.userCountThreshold || 100;
+const USER_COUNT_THRESHOLD = config.userCountThreshold ?? 100;
+const EMPTY_RUN_NOTIFICATION = config.emptyRunNotification ?? true;
 
 if (!API_URL || API_URL.length === 0 || !WEBHOOK_URL || WEBHOOK_URL.length === 0) {
     console.error("No API URL or webhook URL provided");
@@ -79,7 +80,7 @@ for (const row of userList) {
 
 console.log(`Found ${centurionCount} user(s) who reached a new 100-map milestone`);
 
-if (centurionCount === 0) {
+if (centurionCount === 0 && EMPTY_RUN_NOTIFICATION) {
     await sendFinishedProcessingEmbed(WEBHOOK_URL).catch((err) => {
         console.error("Discord webhook error:", err);
     });
